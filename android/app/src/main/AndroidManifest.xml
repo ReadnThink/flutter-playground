@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 알림 권한 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 진동 권한 -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <application
         android:label="state_prac"
         android:name="${applicationName}"

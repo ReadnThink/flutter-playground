@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../providers/cart_provider.dart';
-import 'cart_screen.dart';
+// '상품 목록' 화면에서 장바구니 추가 시 로컬 알림을 띄우기 위해 서비스 사용
+import '../services/notification_service.dart';
 
 /// 상품 목록을 보여주는 화면
 /// 사용자가 상품을 보고 장바구니에 추가할 수 있는 메인 화면
@@ -151,8 +152,15 @@ class _ProductCard extends StatelessWidget {
                           ),
                           // 수량 증가 버튼
                           IconButton(
-                            onPressed: () {
+                            onPressed: () async {
                               cartProvider.addToCart(product.id);
+                              await NotificationService.instance
+                                  .showAddedToCart(
+                                    productName: product.name,
+                                    quantity: cartProvider.getQuantity(
+                                      product.id,
+                                    ),
+                                  );
                             },
                             icon: const Icon(Icons.add_circle_outline),
                             color: Colors.green,
@@ -160,8 +168,15 @@ class _ProductCard extends StatelessWidget {
                         ] else
                           // 장바구니 추가 버튼 (처음 추가할 때)
                           ElevatedButton.icon(
-                            onPressed: () {
+                            onPressed: () async {
                               cartProvider.addToCart(product.id);
+                              await NotificationService.instance
+                                  .showAddedToCart(
+                                    productName: product.name,
+                                    quantity: cartProvider.getQuantity(
+                                      product.id,
+                                    ),
+                                  );
                               // 사용자에게 피드백 제공
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(

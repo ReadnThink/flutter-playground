@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/cart_provider.dart';
 import 'router/app_router.dart';
+import 'services/notification_service.dart';
 
 /// Flutter 전역 상태 관리 연습 앱의 진입점
 /// Provider와 GoRouter를 사용한 장바구니 앱
-void main() {
+void main() async {
+  // Flutter 엔진과 플러그인 채널 초기화 (비동기 초기화 전에 필수)
+  WidgetsFlutterBinding.ensureInitialized();
+  // 로컬 알림 서비스 초기화 및 권한 요청
+  await NotificationService.instance.init();
+  // 실제 앱 구동 시작
   runApp(const MyApp());
 }
 
