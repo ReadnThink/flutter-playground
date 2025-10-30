@@ -98,8 +98,8 @@ class NotificationService {
           _channelId,
           _channelName,
           channelDescription: _channelDescription,
-          importance: Importance.high,
-          priority: Priority.high,
+          importance: Importance.max,
+          priority: Priority.max,
         );
 
     // iOS 기본 설정
@@ -114,8 +114,9 @@ class NotificationService {
     final String title = '장바구니에 추가됨';
     final String body = '$productName (수량: $quantity)';
 
-    // 간단하게 고정 ID 사용. 여러 개를 동시에 쌓고 싶다면 고유 ID 사용 필요
-    await _plugin.show(1001, title, body, details);
+    // 매 호출마다 고유 ID로 표시하여 이전 알림을 덮어쓰지 않도록 함
+    final int notificationId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    await _plugin.show(notificationId, title, body, details);
   }
 
   /// 10초 뒤 예약 알림 (앱이 백그라운드/종료 상태여도 시스템이 표시)
@@ -130,8 +131,8 @@ class NotificationService {
           _channelId,
           _channelName,
           channelDescription: _channelDescription,
-          importance: Importance.high,
-          priority: Priority.high,
+          importance: Importance.max,
+          priority: Priority.max,
         );
 
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
@@ -148,8 +149,10 @@ class NotificationService {
       tz.local,
     ).add(const Duration(seconds: 5));
 
+    // 예약 알림도 매번 고유 ID로 등록 (동일 ID 사용 시 이전 예약이 교체됨)
+    final int notificationId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     await _plugin.zonedSchedule(
-      2001, // 예약 알림용 별도 ID
+      notificationId,
       title,
       body,
       scheduledTime,
