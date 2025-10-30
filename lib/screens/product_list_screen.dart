@@ -115,88 +115,114 @@ class _ProductCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // 가격 표시
-                Text(
-                  '₩${product.price.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                Expanded(
+                  child: Text(
+                    '₩${product.price.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
                   ),
                 ),
 
                 // 장바구니 추가 버튼
-                Consumer<CartProvider>(
-                  builder: (context, cartProvider, child) {
-                    final isInCart = cartProvider.isInCart(product.id);
-                    final quantity = cartProvider.getQuantity(product.id);
+                Flexible(
+                  child: Consumer<CartProvider>(
+                    builder: (context, cartProvider, child) {
+                      final isInCart = cartProvider.isInCart(product.id);
+                      final quantity = cartProvider.getQuantity(product.id);
 
-                    return Row(
-                      children: [
-                        // 수량 조절 버튼들 (장바구니에 있는 경우)
-                        if (isInCart) ...[
-                          // 수량 감소 버튼
-                          IconButton(
-                            onPressed: () {
-                              cartProvider.removeFromCart(product.id);
-                            },
-                            icon: const Icon(Icons.remove_circle_outline),
-                            color: Colors.red,
-                          ),
-                          // 현재 수량 표시
-                          Text(
-                            '$quantity',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 수량 조절 버튼들 (장바구니에 있는 경우)
+                          if (isInCart) ...[
+                            // 수량 감소 버튼
+                            IconButton(
+                              onPressed: () {
+                                cartProvider.removeFromCart(product.id);
+                              },
+                              icon: const Icon(Icons.remove_circle_outline),
+                              color: Colors.red,
                             ),
-                          ),
-                          // 수량 증가 버튼
-                          IconButton(
-                            onPressed: () async {
-                              cartProvider.addToCart(product.id);
-                              await NotificationService.instance
-                                  .showAddedToCart(
-                                    productName: product.name,
-                                    quantity: cartProvider.getQuantity(
-                                      product.id,
+                            // 현재 수량 표시
+                            Text(
+                              '$quantity',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            // 수량 증가 버튼
+                            IconButton(
+                              onPressed: () async {
+                                cartProvider.addToCart(product.id);
+                                await NotificationService.instance
+                                    .showAddedToCart(
+                                      productName: product.name,
+                                      quantity: cartProvider.getQuantity(
+                                        product.id,
+                                      ),
+                                    );
+                                // 백그라운드/앱종료 동작 확인용: 10초 뒤 예약 알림
+                                await NotificationService.instance
+                                    .scheduleAddedToCartIn10Seconds(
+                                      productName: product.name,
+                                      quantity: cartProvider.getQuantity(
+                                        product.id,
+                                      ),
+                                    );
+                              },
+                              icon: const Icon(Icons.add_circle_outline),
+                              color: Colors.green,
+                            ),
+                          ] else
+                            // 장바구니 추가 버튼 (처음 추가할 때)
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  cartProvider.addToCart(product.id);
+                                  await NotificationService.instance
+                                      .showAddedToCart(
+                                        productName: product.name,
+                                        quantity: cartProvider.getQuantity(
+                                          product.id,
+                                        ),
+                                      );
+                                  // 백그라운드/앱종료 동작 확인용: 10초 뒤 예약 알림
+                                  await NotificationService.instance
+                                      .scheduleAddedToCartIn10Seconds(
+                                        productName: product.name,
+                                        quantity: cartProvider.getQuantity(
+                                          product.id,
+                                        ),
+                                      );
+                                  // 사용자에게 피드백 제공
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        '${product.name}이(가) 장바구니에 추가되었습니다.',
+                                      ),
+                                      duration: const Duration(seconds: 2),
                                     ),
                                   );
-                            },
-                            icon: const Icon(Icons.add_circle_outline),
-                            color: Colors.green,
-                          ),
-                        ] else
-                          // 장바구니 추가 버튼 (처음 추가할 때)
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              cartProvider.addToCart(product.id);
-                              await NotificationService.instance
-                                  .showAddedToCart(
-                                    productName: product.name,
-                                    quantity: cartProvider.getQuantity(
-                                      product.id,
-                                    ),
-                                  );
-                              // 사용자에게 피드백 제공
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    '${product.name}이(가) 장바구니에 추가되었습니다.',
-                                  ),
-                                  duration: const Duration(seconds: 2),
+                                },
+                                icon: const Icon(Icons.add_shopping_cart),
+                                label: const Text('장바구니에 추가'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
                                 ),
-                              );
-                            },
-                            icon: const Icon(Icons.add_shopping_cart),
-                            label: const Text('장바구니에 추가'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
+                              ),
                             ),
-                          ),
-                      ],
-                    );
-                  },
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ],
             ),

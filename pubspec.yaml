@@ -41,6 +41,7 @@ dependencies:
   # 라우팅을 위한 GoRouter 패키지
   go_router: ^14.2.7
   flutter_local_notifications: ^19.5.0
+  timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:

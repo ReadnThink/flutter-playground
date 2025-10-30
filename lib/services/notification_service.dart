@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 /// 로컬 푸시 알림을 간단히 사용하기 위한 싱글턴 서비스
 /// - 앱 시작 시 `init()`으로 초기화 및 권한 요청 수행
@@ -43,8 +45,22 @@ class NotificationService {
     // 플러그인 초기화
     await _plugin.initialize(settings);
 
+    // 타임존 데이터 초기화 (예약 알림에 필요)
+    // 기기의 현지 타임존을 사용하도록 설정
+    tz.initializeTimeZones();
+    // tz.local은 플랫폼의 기본 타임존을 참조하므로 별도 설정 없이 사용 가능
+
     // iOS/Android 권한 요청 (iOS는 런타임, Android는 13+에서 런타임)
     await _requestPermissionsIfNeeded();
+
+    // Android: 정확한 알람 권한 (Android 12L/13+에서 필요할 수 있음)
+    if (Platform.isAndroid) {
+      final androidImpl = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      await androidImpl?.requestExactAlarmsPermission();
+    }
 
     _initialized = true;
   }
@@ -100,5 +116,46 @@ class NotificationService {
 
     // 간단하게 고정 ID 사용. 여러 개를 동시에 쌓고 싶다면 고유 ID 사용 필요
     await _plugin.show(1001, title, body, details);
+  }
+
+  /// 10초 뒤 예약 알림 (앱이 백그라운드/종료 상태여도 시스템이 표시)
+  /// - [productName]: 상품명
+  /// - [quantity]: 담긴 수량 (예: 현재 수량)
+  Future<void> scheduleAddedToCartIn10Seconds({
+    required String productName,
+    required int quantity,
+  }) async {
+    final AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          channelDescription: _channelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+        );
+
+    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
+
+    final NotificationDetails details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    final String title = '장바구니 예약 알림';
+    final String body = '$productName (수량: $quantity) - 10초 뒤 알림';
+
+    final tz.TZDateTime scheduledTime = tz.TZDateTime.now(
+      tz.local,
+    ).add(const Duration(seconds: 5));
+
+    await _plugin.zonedSchedule(
+      2001, // 예약 알림용 별도 ID
+      title,
+      body,
+      scheduledTime,
+      details,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      payload: 'cart_scheduled',
+    );
   }
 }

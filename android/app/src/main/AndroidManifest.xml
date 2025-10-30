@@ -3,6 +3,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- 진동 권한 -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- 예약 알림 권한 -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
     <application
         android:label="state_prac"
         android:name="${applicationName}"
