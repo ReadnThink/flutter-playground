@@ -100,6 +100,10 @@ class NotificationService {
           channelDescription: _channelDescription,
           importance: Importance.max,
           priority: Priority.max,
+          playSound: true,
+          enableVibration: true,
+          channelShowBadge: true,
+          ticker: 'added_to_cart',
         );
 
     // iOS 기본 설정
@@ -133,6 +137,10 @@ class NotificationService {
           channelDescription: _channelDescription,
           importance: Importance.max,
           priority: Priority.max,
+          playSound: true,
+          enableVibration: true,
+          channelShowBadge: true,
+          ticker: 'scheduled_cart',
         );
 
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
